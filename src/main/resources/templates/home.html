@@ -1,0 +1,46 @@
+ <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Inicio</title>
+</head>
+
+<body>
+    <h2>Bienvenido al sistema</h2>
+
+    <p>Tu rol es: <span th:text="${rol}"></span></p>
+
+    <nav>
+        <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a th:href="@{/usuarios}">Ver usuarios</a>
+        </div>
+
+        <!-- El Perfil "USER" solo podra modificar su perfil! -->
+        <div th:if="${#authorization.expression('hasRole(''USER'')')}">
+            <a th:href="@{/perfil}">Editar mi perfil</a>
+        </div>
+
+        <div id="mensajeExito" th:if="${param.actualizado}">
+            <p style="color:green;">¡Tu perfil ha sido actualizado correctamente!</p>
+        </div>
+
+
+        <br> <br>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">Cerrar sesión</button>
+        </form>
+
+    </nav>
+
+    <script>
+        setTimeout(function () {
+            const mensaje = document.getElementById("mensajeExito");
+            if (mensaje) {
+                mensaje.style.display = "none";
+            }
+        }, 4000); // 4 segundos
+    </script>
+
+</body> 
+
+</html>
