@@ -2,6 +2,9 @@ package com.example.enviexpress.config;
 
 import com.example.enviexpress.model.Usuario;
 import com.example.enviexpress.repository.UsuarioRepository;
+
+import java.time.LocalDateTime;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +21,12 @@ public class DataInitializer {
                 admin.setUserName("admin");
                 admin.setPassword(new BCryptPasswordEncoder().encode("123"));
                 admin.setRol("ADMIN");
+                admin.setNombre("Administrador");
+                admin.setApellido("Principal");
+                admin.setCorreo("admin@correo.com");
+                admin.setActivo(true);
+                admin.setFechaCreacion(LocalDateTime.now());
+                admin.setTelefono("3244434432");
                 repo.save(admin);
                 System.out.println("✅ Usuario admin creado con éxito");
             } else {

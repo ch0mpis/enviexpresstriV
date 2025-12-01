@@ -18,6 +18,11 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 public class SecurityConfig {
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
@@ -39,11 +44,6 @@ public class SecurityConfig {
 
             
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
 
