@@ -1,52 +1,55 @@
 package com.example.enviexpress.model;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor; 
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "usuario")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "usuario")
 public class Usuario {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario")
     private Long idUsuario;
-
-    @Column(unique = true, nullable = false  )
+    
+    @Column(name = "user_name", nullable = false, unique = true)
     private String userName;
-
+    
     @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false) 
-    private String rol;// Ej: ROLE_ADMIN, ROLE_USER
-
-        @Column(nullable = false, length = 100)
+    
+    @Column(nullable = false, length = 100)
     private String nombre;
-
+    
     @Column(nullable = false, length = 100)
     private String apellido;
-
-    @Column(unique = true, nullable = false, length = 120)
+    
+    @Column(nullable = false, unique = true, length = 120)
     private String correo;
-
+    
     @Column(length = 20)
     private String telefono;
-
+    
     @Column(nullable = false)
-    private Boolean activo = true;
-
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-
-} 
+    private String rol;
+    
+    @Column(nullable = false)
+    private Boolean activo;
+    
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion;
+    
+    // Relaciones
+    @OneToMany(mappedBy = "cliente")
+    private List<Envio> enviosComoCliente;
+    
+    @OneToMany(mappedBy = "mensajero")
+    private List<Envio> enviosComoMensajero;
+}

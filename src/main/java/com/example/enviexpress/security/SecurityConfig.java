@@ -21,13 +21,14 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login","/css/**", "/js/**", "/img/**").permitAll()  //cualquier usuario sin autenticar
                 .requestMatchers("/usuarios/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
+                .requestMatchers("/vehiculos/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
                 .requestMatchers("/perfil/**").authenticated()    // rutas permitidas para usuarios autenticados : actualiza perfil usuario
                 .anyRequest().authenticated()
             )
