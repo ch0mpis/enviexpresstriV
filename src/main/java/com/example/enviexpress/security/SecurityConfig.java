@@ -27,12 +27,12 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login","/css/**", "/js/**", "/img/**").permitAll()
+                .requestMatchers("/", "/registro", "/registro/**","/envios/**").permitAll()
                 .requestMatchers("/seguimiento", "/seguimiento/**").permitAll()   //cualquier usuario sin autenticar
                 .requestMatchers("/usuarios/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
                 .requestMatchers("/vehiculos/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
                 .requestMatchers("/tarifas/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
                 .requestMatchers("/perfil", "/perfil/**","/seguimiento", "/seguimiento/**").authenticated()
-                .requestMatchers("/envios/**").authenticated()
                 .requestMatchers("/home", "/home_cliente").authenticated()   // rutas permitidas para usuarios autenticados : actualiza perfil usuario
                 .anyRequest().authenticated()
             )
@@ -41,10 +41,9 @@ public class SecurityConfig {
                  .successHandler(customAuthenticationSuccessHandler()) // aquí usamos nuestro handler   //.defaultSuccessUrl("/home", true) //cuando el usuario se logea, se dirige al home.html
                 .permitAll()   //permitido a cualquier usuario
             )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout")
-                .permitAll() //permitido a cualquier usuario
-                
+        .logout(logout -> logout
+            .logoutSuccessUrl("/?logout")  // ← CAMBIO AQUÍ: era "/login?logout"
+            .permitAll()
             )
                 .exceptionHandling(exception -> exception
                 .accessDeniedHandler((request, response, accessDeniedException) -> {

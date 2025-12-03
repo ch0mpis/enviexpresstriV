@@ -18,7 +18,11 @@ public class SeguimientoController {
     private EnvioRepository envioRepo;
 
     @GetMapping("/seguimiento")
-    public String seguimiento() {
+    public String seguimiento(@RequestParam(required = false) String numeroGuia, Model model) {
+        // Si viene un número de guía en la URL, buscar directamente
+        if (numeroGuia != null && !numeroGuia.trim().isEmpty()) {
+            return buscar(numeroGuia, model);
+        }
         return "seguimiento";
     }
 

@@ -20,14 +20,31 @@ public class UsuarioController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @GetMapping("/")
-    public String redireccionRaiz() {
-        return "redirect:/login";
-    }
 
     @GetMapping("/login")
     public String login() {
         return "login";
+    }
+
+
+    @GetMapping("/registro")
+    public String registro(Model model) {
+        model.addAttribute("usuario", new Usuario());
+        return "registro";
+    }
+
+    @PostMapping("/registro/guardar")
+    public String guardarRegistro(@ModelAttribute Usuario usuario) {
+        // Establecer valores por defecto para nuevo cliente
+        usuario.setRol("ROLE_CLIENTE");
+        usuario.setActivo(true);
+        usuario.setFechaCreacion(LocalDateTime.now());
+        
+        // Encriptar contraseña
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        
+        repo.save(usuario);
+        return "redirect:/login?registro=exitoso";
     }
 
     @GetMapping("/usuarios")

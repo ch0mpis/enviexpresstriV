@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -104,6 +105,23 @@
             margin: 0;
         }
 
+        /* Mejorar la visibilidad del nombre de usuario */
+        .welcome-badge {
+            background: rgba(0, 255, 136, 0.15);
+            padding: 8px 20px;
+            border-radius: 25px;
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .welcome-badge .username-highlight {
+            color: #00ff88;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
         @media (max-width: 768px) {
             .user-info {
                 margin-bottom: 10px;
@@ -150,10 +168,12 @@
 <div class="container text-center mb-4">
     <h1 class="title-glow">Bienvenido a tu Panel de Cliente</h1>
     <p class="fs-5">Gestiona tus envíos, consulta tus guías y controla todo desde un solo lugar.</p>
-    <p class="text-muted">
-        <i class="bi bi-person-badge"></i> 
-        Conectado como: <strong class="text-success" th:text="${#authentication.principal.username}">Cliente</strong>
-    </p>
+    
+    <!-- Badge destacado con el nombre de usuario -->
+    <div class="welcome-badge">
+        <i class="bi bi-person-check-fill"></i>
+        Conectado como: <span class="username-highlight" th:text="${#authentication.principal.username}">oscari</span>
+    </div>
 </div>
 
 <!-- ACCIONES RÁPIDAS -->
