@@ -26,10 +26,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login","/css/**", "/js/**", "/img/**").permitAll()  //cualquier usuario sin autenticar
+                .requestMatchers("/login","/css/**", "/js/**", "/img/**").permitAll()
+                .requestMatchers("/seguimiento", "/seguimiento/**").permitAll()   //cualquier usuario sin autenticar
                 .requestMatchers("/usuarios/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
                 .requestMatchers("/vehiculos/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
-                .requestMatchers("/perfil/**").authenticated()    // rutas permitidas para usuarios autenticados : actualiza perfil usuario
+                .requestMatchers("/tarifas/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
+                .requestMatchers("/perfil", "/perfil/**","/seguimiento", "/seguimiento/**").authenticated()
+                .requestMatchers("/envios/**").authenticated()
+                .requestMatchers("/home", "/home_cliente").authenticated()   // rutas permitidas para usuarios autenticados : actualiza perfil usuario
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -40,7 +44,14 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout")
                 .permitAll() //permitido a cualquier usuario
+                
+            )
+                .exceptionHandling(exception -> exception
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.sendRedirect("/login?denied");
+                })
             );
+
  
 
             

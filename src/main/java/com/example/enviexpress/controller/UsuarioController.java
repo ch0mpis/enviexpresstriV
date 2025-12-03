@@ -4,7 +4,7 @@ import com.example.enviexpress.model.Usuario;
 import com.example.enviexpress.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;  // ← ESTE IMPORT
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +18,7 @@ public class UsuarioController {
     private UsuarioRepository repo;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;  // ← ESTE TIPO
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/")
     public String redireccionRaiz() {
@@ -28,18 +28,6 @@ public class UsuarioController {
     @GetMapping("/login")
     public String login() {
         return "login";
-    }
-
-    @GetMapping("/home")
-    public String home(Model model, Authentication auth) {
-        model.addAttribute("rol", auth.getAuthorities().toString());
-        return "home";
-    }
-
-    @GetMapping("/home_cliente")
-    public String home_cliente(Model model, Authentication auth) {
-        model.addAttribute("rol", auth.getAuthorities().toString());
-        return "home_cliente";
     }
 
     @GetMapping("/usuarios")
@@ -82,13 +70,14 @@ public class UsuarioController {
         return "redirect:/usuarios";
     }
 
+    // PERFIL DEL USUARIO ACTUAL (usa perfil.html)
     @GetMapping("/perfil")
     public String perfil(Model model, Authentication auth) {
         String username = auth.getName();
         Usuario usuario = repo.findByUserName(username)
             .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         model.addAttribute("usuario", usuario);
-        return "form";
+        return "perfil";  // ← CAMBIO: usa perfil.html (el diseño bonito)
     }
 
     @PostMapping("/perfil/guardar")
@@ -104,6 +93,6 @@ public class UsuarioController {
         if (usuario.getCorreo() != null) actual.setCorreo(usuario.getCorreo());
 
         repo.save(actual);
-        return "redirect:/home?actualizado";
+        return "redirect:/home_cliente?actualizado";  // ← CAMBIO: redirige a home_cliente
     }
 }

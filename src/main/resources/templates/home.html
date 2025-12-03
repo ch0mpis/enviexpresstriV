@@ -1,113 +1,270 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Home Administrador</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador – EnviExpress</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
     <style>
         body {
-            background-color: #f4fdf7;
-            font-family: Arial, sans-serif;
-            color: #1f3d1f;
-        }
-
-        h2 {
-            color: #1f7a1f;
-            text-align: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-
-        .btn-accion {
-            margin-right: 10px;
-        }
-
-        .btn-logout {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #031a03, #052f05, #004d00);
+            min-height: 100vh;
             color: white;
+            font-family: 'Montserrat', sans-serif;
+            padding-top: 80px;
+        }
+
+        .navbar {
+            backdrop-filter: blur(12px);
+            background: rgba(0, 30, 0, 0.3);
+            border-bottom: 1px solid rgba(0,255,0,0.2);
+        }
+
+        .title-glow {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-shadow: 0 0 12px #00ff88;
+            color: #00ff88;
+        }
+
+        .quick-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.25);
+            border-radius: 14px;
+            padding: 25px;
+            transition: 0.3s;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .quick-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 0 18px #00ff4488;
+        }
+
+        .btn-green {
+            background: #00ff88;
             border: none;
+            padding: 10px 16px;
+            color: black;
+            font-weight: 700;
+            border-radius: 10px;
+            transition: .3s;
+        }
+        
+        .btn-green:hover {
+            transform: scale(1.05);
+            background: #00cc66;
+            color: black;
         }
 
-        .btn-logout:hover {
-            background-color: #bb2d3b;
-        }
-
-        .nav-acciones {
-            background-color: #e6f4ea;
-            padding: 15px;
-            border-radius: 8px;
+        .section-title {
+            color: #00ff88;
             margin-bottom: 30px;
         }
 
-        .nav-acciones .btn {
-            min-width: 150px;
+        .alert-success {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
         }
 
-        .header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px 0;
+        footer {
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(0,255,0,0.3);
+            margin-top: 50px;
         }
 
-        .rol-info {
-            color: #1f7a1f;
-            font-weight: 500;
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
         }
     </style>
 </head>
-
 <body>
-    <div class="container mt-4">
-        
-        <!-- Barra superior con rol y logout -->
-        <div class="header-bar">
-            <div class="rol-info">
-                <i class="bi bi-person-badge"></i> Tu rol es: <span th:text="${rol}"></span>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold fs-3 text-success" href="#">ENVI<span class="text-light">EXPRESS</span></a>
+
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div id="nav" class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto gap-3">
+                <li class="nav-item">
+                    <span class="navbar-text text-light">
+                        <i class="bi bi-person-badge"></i> 
+                        <span th:text="${rol}"></span>
+                    </span>
+                </li>
+                <!-- BOTÓN LOGOUT -->
+                <li class="nav-item">
+                    <form th:action="@{/logout}" method="post">
+                        <button class="btn btn-danger btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- HEADER -->
+<div class="container text-center mb-4">
+    <h1 class="title-glow">Panel de Administrador</h1>
+    <p class="fs-5">Gestiona usuarios, vehículos, tarifas y envíos desde un solo lugar.</p>
+</div>
+
+<!-- Mensaje de éxito -->
+<div class="container">
+    <div id="mensajeExito" th:if="${param.actualizado}" class="alert alert-success text-center" role="alert">
+        <i class="bi bi-check-circle-fill"></i> ¡El perfil ha sido actualizado correctamente!
+    </div>
+</div>
+
+<!-- ACCIONES PRINCIPALES -->
+<section id="acciones" class="container py-4">
+    <h2 class="mb-4 fw-bold section-title text-center">Gestión del Sistema</h2>
+
+    <div class="row g-4">
+
+        <!-- Usuarios -->
+        <div class="col-md-3">
+            <div class="quick-card">
+                <i class="bi bi-people-fill text-success card-icon"></i>
+                <h5 class="mt-2">Usuarios</h5>
+                <p class="small">Gestiona clientes, mensajeros y administradores</p>
+                <a th:href="@{/usuarios}" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Administrar
+                </a>
             </div>
-            
-            <form th:action="@{/logout}" method="post" class="m-0">
-                <button class="btn btn-logout" type="submit">
-                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-                </button>
-            </form>
         </div>
 
-        <h2>Bienvenido al Panel de Administrador</h2>
-
-        <!-- Mensaje de éxito -->
-        <div id="mensajeExito" th:if="${param.actualizado}" class="alert alert-success text-center" role="alert">
-            <i class="bi bi-check-circle-fill"></i> ¡El perfil ha sido actualizado correctamente!
+        <!-- Vehículos -->
+        <div class="col-md-3">
+            <div class="quick-card">
+                <i class="bi bi-truck text-success card-icon"></i>
+                <h5 class="mt-2">Vehículos</h5>
+                <p class="small">Administra la flota de vehículos disponibles</p>
+                <a th:href="@{/vehiculos}" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Ver Flota
+                </a>
+            </div>
         </div>
 
-        <!-- Barra de acciones -->
-        <div class="d-flex justify-content-center nav-acciones flex-wrap mb-4">
-            <a class="btn btn-success btn-accion" th:href="@{/usuarios}">
-                <i class="bi bi-people-fill"></i> Ver Usuarios
-            </a>
-            <a class="btn btn-success btn-accion" th:href="@{/vehiculos}">
-                <i class="bi bi-truck"></i> Ver Vehículos
-            </a>
-            <a class="btn btn-success btn-accion" th:href="@{/tarifas}">
-                <i class="bi bi-currency-dollar"></i> Ver Tarifas
-            </a>
+        <!-- Envíos -->
+        <div class="col-md-3">
+            <div class="quick-card">
+                <i class="bi bi-box-seam text-success card-icon"></i>
+                <h5 class="mt-2">Envíos</h5>
+                <p class="small">Gestiona y supervisa todos los envíos</p>
+                <a th:href="@{/envios}" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Ver Envíos
+                </a>
+            </div>
+        </div>
+
+        <!-- Tarifas -->
+        <div class="col-md-3">
+            <div class="quick-card">
+                <i class="bi bi-currency-dollar text-success card-icon"></i>
+                <h5 class="mt-2">Tarifas</h5>
+                <p class="small">Configura precios y tipos de servicio</p>
+                <a th:href="@{/tarifas}" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Configurar
+                </a>
+            </div>
         </div>
 
     </div>
+</section>
 
-    <script>
-        setTimeout(function () {
-            const mensaje = document.getElementById("mensajeExito");
-            if (mensaje) {
-                mensaje.style.display = "none";
-            }
-        }, 4000); // 4 segundos
-    </script>
+<!-- ESTADÍSTICAS RÁPIDAS (Opcional) -->
+<section id="estadisticas" class="container py-5">
+    <h2 class="fw-bold mb-4 section-title text-center">Vista Rápida</h2>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="quick-card">
+                <i class="bi bi-graph-up-arrow fs-1 text-success"></i>
+                <h4 class="mt-3">Envíos Activos</h4>
+                <p >Consulta el estado de todos los envíos en curso</p>
+                <a th:href="@{/envios}" class="btn btn-sm btn-outline-success mt-2">Ver detalles</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="quick-card">
+                <i class="bi bi-people fs-1 text-success"></i>
+                <h4 class="mt-3">Usuarios Registrados</h4>
+                <p >Administra perfiles y permisos del sistema</p>
+                <a th:href="@{/usuarios}" class="btn btn-sm btn-outline-success mt-2">Gestionar</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="quick-card">
+                <i class="bi bi-gear-fill fs-1 text-success"></i>
+                <h4 class="mt-3">Configuración</h4>
+                <p >Ajusta tarifas, rutas y parámetros del sistema</p>
+                <a th:href="@{/tarifas}" class="btn btn-sm btn-outline-success mt-2">Configurar</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ACCESO RÁPIDO -->
+<section id="acceso-rapido" class="container text-center py-4">
+    <h2 class="fw-bold section-title">Accesos Rápidos</h2>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a th:href="@{/usuarios/nuevo}" class="btn btn-success">
+            <i class="bi bi-person-plus-fill"></i> Crear Usuario
+        </a>
+        <a th:href="@{/vehiculos/nuevo}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Agregar Vehículo
+        </a>
+        <a th:href="@{/envios/nuevo}" class="btn btn-success">
+            <i class="bi bi-box-seam"></i> Nuevo Envío
+        </a>
+        <a th:href="@{/perfil}" class="btn btn-outline-light">
+            <i class="bi bi-person-circle"></i> Mi Perfil
+        </a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="text-center mt-5 p-3">
+    <p class="mb-0">© 2025 EnviExpress – Panel de Administrador</p>
+    <small class="text-muted">Sistema de Gestión de Envíos v1.0</small>
+</footer>
+
+<script>
+    setTimeout(function () {
+        const mensaje = document.getElementById("mensajeExito");
+        if (mensaje) {
+            mensaje.style.display = "none";
+        }
+    }, 4000); // 4 segundos
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

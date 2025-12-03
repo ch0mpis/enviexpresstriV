@@ -95,9 +95,12 @@
             <p class="msg" style="color:#00ff88;">Sesión cerrada correctamente</p>
         </div>
 
-        <div id="id_sesioncerrada" th:if="${param.denied}">
-            <p class="msg" style="color:red;">Acceso denegado. No tienes permisos para ver esta página.</p>
+        <div th:if="${param.denied}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> 
+            <strong>Acceso denegado.</strong> No tienes permisos para ver esta página.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+
 
     </div>
 

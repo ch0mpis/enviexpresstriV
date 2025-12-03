@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario de Envío</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4fdf7;
+            color: #1f3d1f;
+            font-family: Arial, sans-serif;
+        }
+        .form-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #1f7a1f;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn-primary {
+            background-color: #1f7a1f;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #155d15;
+        }
+        .section-title {
+            background-color: #e6f4ea;
+            padding: 10px;
+            margin: 20px 0 15px 0;
+            border-left: 4px solid #1f7a1f;
+            font-weight: bold;
+        }
+        .info-badge {
+            background-color: #e6f4ea;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .direccion-manual {
+            display: none;
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #1f7a1f;
+        }
+        .direccion-manual.show {
+            display: block;
+        }
+        .btn-toggle {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>
+                <i class="bi bi-box-seam"></i>
+                <span th:text="${envio.envioId != null ? 'Editar Envío' : 'Nuevo Envío'}">Formulario de Envío</span>
+            </h2>
+            
+            <!-- Info para clientes -->
+            <div class="info-badge" th:if="${envio.envioId != null}">
+                <strong><i class="bi bi-info-circle"></i> Información del envío:</strong><br/>
+                <small>N° Guía: <strong th:text="${envio.numeroGuia}">ENV000000</strong></small><br/>
+                <small>Estado: <strong th:text="${envio.estado != null ? envio.estado.name().replace('_', ' ') : 'N/A'}">Registrado</strong></small>
+            </div>
+            
+            <form th:action="@{/envios/guardar}" th:object="${envio}" method="post" id="formEnvio">
+                  
+                <input type="hidden" th:field="*{envioId}" />
+
+                <!-- ADMIN: Información del envío -->
+                <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                    <div class="section-title">
+                        <i class="bi bi-info-circle"></i> Información del Envío
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cliente" class="form-label">Cliente:*</label>
+                            <select class="form-select" th:field="*{cliente.idUsuario}" id="cliente" required>
+                                <option value="">Seleccione un cliente</option>
+                                <option th:each="c : ${clientes}" 
+                                        th:value="${c.idUsuario}" 
+                                        th:text="${c.nombre + ' ' + c.apellido + ' (' + c.userName + ')'}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="mensajero" class="form-label">Mensajero:</label>
+                            <select class="form-select" th:field="*{mensajero.idUsuario}" id="mensajero">
+                                <option value="">Sin asignar</option>
+                                <option th:each="m : ${mensajeros}" 
+                                        th:value="${m.idUsuario}" 
+                                        th:text="${m.nombre + ' ' + m.apellido + ' (' + m.userName + ')'}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ubicaciones -->
+                <div class="section-title">
+                    <i class="bi bi-geo-alt"></i> Ubicaciones
+                </div>
+
+                <!-- LUGAR DE RECOGIDA -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">
+                            <i class="bi bi-geo-alt-fill text-success"></i> Lugar de Recogida:*
+                        </label>
+                        <button type="button" class="btn btn-sm btn-outline-success btn-toggle" onclick="toggleDireccionManual('recogida')">
+                            <i class="bi bi-plus-circle"></i> Ingresar dirección nueva
+                        </button>
+                    </div>
+                    
+                    <select class="form-select" name="lugarRecogidaSelect" id="lugarRecogidaSelect">
+                        <option value="">Seleccione ubicación existente o ingrese nueva</option>
+                        <option th:each="l : ${lugares}" 
+                                th:value="${l.lugarId}" 
+                                th:text="${l.direccion + ', ' + l.ciudad}"
+                                th:selected="${envio.lugarRecogida != null and envio.lugarRecogida.lugarId == l.lugarId}">
+                        </option>
+                    </select>
+                    
+                    <input type="hidden" th:field="*{lugarRecogida.lugarId}" id="lugarRecogidaId" />
+                    
+                    <div id="direccionManualRecogida" class="direccion-manual">
+                        <h6 class="text-success"><i class="bi bi-pencil"></i> Nueva Dirección de Recogida</h6>
+                        <div class="row">
+                            <div class="col-md-8 mb-2">
+                                <label for="nuevaDireccionRecogida" class="form-label">Dirección:*</label>
+                                <input type="text" class="form-control" id="nuevaDireccionRecogida" 
+                                       name="nuevaDireccionRecogida" placeholder="Ej: Calle 100 #15-20" />
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label for="nuevaCiudadRecogida" class="form-label">Ciudad:*</label>
+                                <input type="text" class="form-control" id="nuevaCiudadRecogida" 
+                                       name="nuevaCiudadRecogida" placeholder="Ej: Bogotá" value="Bogotá" />
+                            </div>
+                            <div class="col-md-12 mb-2">
+                                <label for="nuevaReferenciaRecogida" class="form-label">Referencia:</label>
+                                <input type="text" class="form-control" id="nuevaReferenciaRecogida" 
+                                       name="nuevaReferenciaRecogida" placeholder="Ej: Frente al supermercado" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LUGAR DE ENTREGA -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">
+                            <i class="bi bi-geo-fill text-danger"></i> Lugar de Entrega:*
+                        </label>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-toggle" onclick="toggleDireccionManual('entrega')">
+                            <i class="bi bi-plus-circle"></i> Ingresar dirección nueva
+                        </button>
+                    </div>
+                    
+                    <select class="form-select" name="lugarEntregaSelect" id="lugarEntregaSelect">
+                        <option value="">Seleccione ubicación existente o ingrese nueva</option>
+                        <option th:each="l : ${lugares}" 
+                                th:value="${l.lugarId}" 
+                                th:text="${l.direccion + ', ' + l.ciudad}"
+                                th:selected="${envio.lugarEntrega != null and envio.lugarEntrega.lugarId == l.lugarId}">
+                        </option>
+                    </select>
+                    
+                    <input type="hidden" th:field="*{lugarEntrega.lugarId}" id="lugarEntregaId" />
+                    
+                    <div id="direccionManualEntrega" class="direccion-manual">
+                        <h6 class="text-danger"><i class="bi bi-pencil"></i> Nueva Dirección de Entrega</h6>
+                        <div class="row">
+                            <div class="col-md-8 mb-2">
+                                <label for="nuevaDireccionEntrega" class="form-label">Dirección:*</label>
+                                <input type="text" class="form-control" id="nuevaDireccionEntrega" 
+                                       name="nuevaDireccionEntrega" placeholder="Ej: Carrera 7 #32-45" />
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label for="nuevaCiudadEntrega" class="form-label">Ciudad:*</label>
+                                <input type="text" class="form-control" id="nuevaCiudadEntrega" 
+                                       name="nuevaCiudadEntrega" placeholder="Ej: Bogotá" value="Bogotá" />
+                            </div>
+                            <div class="col-md-12 mb-2">
+                                <label for="nuevaReferenciaEntrega" class="form-label">Referencia:</label>
+                                <input type="text" class="form-control" id="nuevaReferenciaEntrega" 
+                                       name="nuevaReferenciaEntrega" placeholder="Ej: Edificio azul, apto 301" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles del servicio -->
+                <div class="section-title">
+                    <i class="bi bi-truck"></i> Detalles del Servicio
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="peso" class="form-label">Peso (kg):*</label>
+                        <input type="number" class="form-control" th:field="*{peso}" id="peso" 
+                               step="0.01" min="0.01" placeholder="0.00" required />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="tipoServicio" class="form-label">Tipo de Servicio:*</label>
+                        <select class="form-select" th:field="*{tipoServicio}" id="tipoServicio" required>
+                            <option value="">Seleccione tipo</option>
+                            <option th:each="ts : ${tiposServicio}" 
+                                    th:value="${ts}" 
+                                    th:text="${ts.name()}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="tarifa" class="form-label">Tarifa:*</label>
+                        <select class="form-select" th:field="*{tarifa.id}" id="tarifa" required>
+                            <option value="">Seleccione tarifa</option>
+                            <option th:each="t : ${tarifas}" 
+                                    th:value="${t.id}" 
+                                    th:text="${t.tipo + ' - $' + #numbers.formatDecimal(t.precioKg, 0, 'COMMA', 2, 'POINT') + '/kg'}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ADMIN: Asignaciones -->
+                <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="vehiculo" class="form-label">Vehículo:</label>
+                            <select class="form-select" th:field="*{vehiculo.vehiculoId}" id="vehiculo">
+                                <option value="">Sin asignar</option>
+                                <option th:each="v : ${vehiculos}" 
+                                        th:value="${v.vehiculoId}" 
+                                        th:text="${v.placa + ' - ' + v.tipo + ' (Cap: ' + v.capacidadKg + ' kg)'}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="ruta" class="form-label">Ruta:</label>
+                            <select class="form-select" th:field="*{ruta.rutaId}" id="ruta">
+                                <option value="">Sin asignar</option>
+                                <option th:each="r : ${rutas}" 
+                                        th:value="${r.rutaId}" 
+                                        th:text="${r.nombreSector + ' - ' + r.ciudad}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADMIN: Estado (solo en edición) -->
+                <div th:if="${#authorization.expression('hasRole(''ADMIN'')')} and ${envio.envioId != null}">
+                    <div class="section-title">
+                        <i class="bi bi-info-circle"></i> Estado del Envío
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="estado" class="form-label">Estado:*</label>
+                            <select class="form-select" th:field="*{estado}" id="estado" required>
+                                <option th:each="est : ${estados}" 
+                                        th:value="${est}" 
+                                        th:text="${est.name().replace('_', ' ')}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instrucciones -->
+                <div class="mb-3">
+                    <label for="instrucciones" class="form-label">
+                        <i class="bi bi-chat-left-text"></i> Instrucciones especiales:
+                    </label>
+                    <textarea class="form-control" th:field="*{instrucciones}" id="instrucciones" 
+                              rows="3" placeholder="Agregar notas o instrucciones especiales..."></textarea>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-save"></i> Guardar Envío
+                    </button>
+                    <a th:href="@{/envios}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Función para mostrar/ocultar el formulario de dirección manual
+        function toggleDireccionManual(tipo) {
+            const divManual = document.getElementById('direccionManual' + tipo.charAt(0).toUpperCase() + tipo.slice(1));
+            const select = document.getElementById('lugar' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Select');
+            const hiddenInput = document.getElementById('lugar' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Id');
+            
+            if (divManual.classList.contains('show')) {
+                // Ocultar formulario manual
+                divManual.classList.remove('show');
+                select.value = '';
+                hiddenInput.value = '';
+                // Limpiar campos manuales
+                document.getElementById('nuevaDireccion' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).value = '';
+                document.getElementById('nuevaCiudad' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).value = 'Bogotá';
+                document.getElementById('nuevaReferencia' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).value = '';
+            } else {
+                // Mostrar formulario manual
+                divManual.classList.add('show');
+                select.value = '';
+                hiddenInput.value = '';
+            }
+        }
+        
+        // Sincronizar select con campo hidden
+        document.getElementById('lugarRecogidaSelect').addEventListener('change', function() {
+            document.getElementById('lugarRecogidaId').value = this.value;
+            if (this.value) {
+                document.getElementById('direccionManualRecogida').classList.remove('show');
+            }
+        });
+        
+        document.getElementById('lugarEntregaSelect').addEventListener('change', function() {
+            document.getElementById('lugarEntregaId').value = this.value;
+            if (this.value) {
+                document.getElementById('direccionManualEntrega').classList.remove('show');
+            }
+        });
+        
+        // Validación antes de enviar el formulario
+        document.getElementById('formEnvio').addEventListener('submit', function(e) {
+            const lugarRecogidaId = document.getElementById('lugarRecogidaId').value;
+            const lugarEntregaId = document.getElementById('lugarEntregaId').value;
+            
+            // Validar lugar de recogida
+            if (!lugarRecogidaId) {
+                const direccion = document.getElementById('nuevaDireccionRecogida').value.trim();
+                const ciudad = document.getElementById('nuevaCiudadRecogida').value.trim();
+                
+                if (!direccion || !ciudad) {
+                    e.preventDefault();
+                    alert('Por favor, seleccione una dirección de recogida existente o complete los campos para crear una nueva');
+                    return false;
+                }
+            }
+            
+            // Validar lugar de entrega
+            if (!lugarEntregaId) {
+                const direccion = document.getElementById('nuevaDireccionEntrega').value.trim();
+                const ciudad = document.getElementById('nuevaCiudadEntrega').value.trim();
+                
+                if (!direccion || !ciudad) {
+                    e.preventDefault();
+                    alert('Por favor, seleccione una dirección de entrega existente o complete los campos para crear una nueva');
+                    return false;
+                }
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+</body>
+</html>
