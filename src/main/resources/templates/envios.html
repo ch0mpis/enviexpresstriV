@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -97,11 +99,19 @@
 
         <h2><i class="bi bi-box-seam"></i> Gestión de Envíos</h2>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- BOTONES DE ACCIÓN -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             
-            <a class="btn btn-neon" th:href="@{/envios/nuevo}">
-                <i class="bi bi-plus-circle"></i> Nuevo Envío
-            </a>
+            <div class="d-flex gap-2">
+                <a class="btn btn-neon" th:href="@{/envios/nuevo}">
+                    <i class="bi bi-plus-circle"></i> Nuevo Envío
+                </a>
+                <!-- SOLO MOSTRAR REPORTE PARA ADMIN Y MENSAJERO -->
+                <a class="btn btn-neon" th:href="@{/envios/reporte}" 
+                   sec:authorize="hasAnyRole('ADMIN', 'MENSAJERO')">
+                    <i class="bi bi-file-earmark-bar-graph"></i> Generar Reporte
+                </a>
+            </div>
 
             <div class="d-flex gap-2">
                 <a class="btn btn-neon" th:href="@{/home}">

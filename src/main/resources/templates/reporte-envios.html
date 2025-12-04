@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #00ff88;
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            color: #004d00;
+            margin: 0;
+        }
+        .header h2 {
+            color: #00ff88;
+            margin: 5px 0;
+        }
+        .info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-left: 4px solid #00ff88;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #004d00;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .estado-Registrado { background-color: #6c757d; color: white; }
+        .estado-En_Bodega { background-color: #0d6efd; color: white; }
+        .estado-En_Ruta { background-color: #ffc107; color: black; }
+        .estado-En_Destino { background-color: #17a2b8; color: white; }
+        .estado-Entregado { background-color: #28a745; color: white; }
+        .estado-Fallido { background-color: #dc3545; color: white; }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ENVIEXPRESS</h1>
+        <h2>Reporte de Envíos</h2>
+    </div>
+
+    <div class="info">
+        <strong>Fecha de generación:</strong> ${fecha}<br/>
+        <#if desde??>
+            <strong>Desde:</strong> ${desde}<br/>
+        </#if>
+        <#if hasta??>
+            <strong>Hasta:</strong> ${hasta}<br/>
+        </#if>
+        <strong>Total de envíos:</strong> ${total}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nº Guía</th>
+                <th>Cliente</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Peso</th>
+                <th>Costo</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            <#list envios as envio>
+            <tr>
+                <td><strong>${envio.numeroGuia}</strong></td>
+                <td>${envio.clienteNombre}</td>
+                <td>${envio.origenCiudad}</td>
+                <td>${envio.destinoCiudad}</td>
+                <td>${envio.peso} kg</td>
+                <td>$${envio.costoEnvio}</td>
+                <td>
+                    <span class="badge estado-${envio.estadoNombre}">
+                        ${envio.estadoDisplay}
+                    </span>
+                </td>
+                <td>${envio.fechaCreacion}</td>
+            </tr>
+            </#list>
+        </tbody>
+    </table>
+
+    <#if totalCostos??>
+    <div class="summary">
+        <strong>Total acumulado en costos:</strong> $${totalCostos}
+    </div>
+    </#if>
+
+    <div class="footer">
+        <p>Sistema de Gestión de Envíos - EnviExpress © 2025</p>
+    </div>
+</body>
+</html>

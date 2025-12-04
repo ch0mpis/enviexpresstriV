@@ -2,14 +2,19 @@ package com.example.enviexpress.controller;
 
 import com.example.enviexpress.model.Usuario;
 import com.example.enviexpress.repository.UsuarioRepository;
+import com.example.enviexpress.util.PdfGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class UsuarioController {
@@ -20,12 +25,13 @@ public class UsuarioController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private PdfGenerator pdfGenerator;
 
     @GetMapping("/login")
     public String login() {
         return "login";
     }
-
 
     @GetMapping("/registro")
     public String registro(Model model) {
@@ -35,14 +41,10 @@ public class UsuarioController {
 
     @PostMapping("/registro/guardar")
     public String guardarRegistro(@ModelAttribute Usuario usuario) {
-        // Establecer valores por defecto para nuevo cliente
         usuario.setRol("ROLE_CLIENTE");
         usuario.setActivo(true);
         usuario.setFechaCreacion(LocalDateTime.now());
-        
-        // Encriptar contraseña
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-        
         repo.save(usuario);
         return "redirect:/login?registro=exitoso";
     }
@@ -87,14 +89,13 @@ public class UsuarioController {
         return "redirect:/usuarios";
     }
 
-    // PERFIL DEL USUARIO ACTUAL (usa perfil.html)
     @GetMapping("/perfil")
     public String perfil(Model model, Authentication auth) {
         String username = auth.getName();
         Usuario usuario = repo.findByUserName(username)
             .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         model.addAttribute("usuario", usuario);
-        return "perfil";  // ← CAMBIO: usa perfil.html (el diseño bonito)
+        return "perfil";
     }
 
     @PostMapping("/perfil/guardar")
@@ -110,6 +111,64 @@ public class UsuarioController {
         if (usuario.getCorreo() != null) actual.setCorreo(usuario.getCorreo());
 
         repo.save(actual);
-        return "redirect:/home_cliente?actualizado";  // ← CAMBIO: redirige a home_cliente
+        return "redirect:/home_cliente?actualizado";
+    }
+
+    // ============= REPORTES =============
+
+    /**
+     * Muestra la vista de reporte de usuarios con filtros
+     */
+    @GetMapping("/usuarios/reporte")
+    public String vistaReporte(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String rol,
+            @RequestParam(required = false) Boolean activo,
+            Model model) {
+        
+        List<Usuario> usuarios = filtrarUsuarios(nombre, rol, activo);
+        
+        model.addAttribute("usuarios", usuarios);
+        model.addAttribute("nombre", nombre);
+        model.addAttribute("rol", rol);
+        model.addAttribute("activo", activo);
+        
+        return "vista-reporte-usuarios";
+    }
+
+    /**
+     * Genera el PDF de usuarios
+     */
+    @GetMapping("/usuarios/reporte/pdf")
+    public void generarReportePdf(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String rol,
+            @RequestParam(required = false) Boolean activo,
+            HttpServletResponse response) throws Exception {
+        
+        List<Usuario> usuarios = filtrarUsuarios(nombre, rol, activo);
+        
+        Map<String, Object> model = new HashMap<>();
+        model.put("usuarios", usuarios);
+        model.put("fecha", LocalDate.now());
+        model.put("total", usuarios.size());
+        
+        pdfGenerator.generarPdf("reporte-usuarios", model, "reporte-usuarios", response);
+    }
+
+    /**
+     * Método auxiliar para filtrar usuarios
+     */
+    private List<Usuario> filtrarUsuarios(String nombre, String rol, Boolean activo) {
+        List<Usuario> todos = repo.findAll();
+        
+        return todos.stream()
+                .filter(u -> nombre == null || 
+                        u.getNombre().toLowerCase().contains(nombre.toLowerCase()) ||
+                        u.getApellido().toLowerCase().contains(nombre.toLowerCase()) ||
+                        u.getUserName().toLowerCase().contains(nombre.toLowerCase()))
+                .filter(u -> rol == null || u.getRol().equals(rol))
+                .filter(u -> activo == null || u.getActivo().equals(activo))
+                .collect(Collectors.toList());
     }
 }

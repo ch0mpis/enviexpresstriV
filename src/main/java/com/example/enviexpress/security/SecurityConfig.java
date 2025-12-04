@@ -31,7 +31,9 @@ public class SecurityConfig {
                 .requestMatchers("/seguimiento", "/seguimiento/**").permitAll()   //cualquier usuario sin autenticar
                 .requestMatchers("/usuarios/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
                 .requestMatchers("/vehiculos/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
-                .requestMatchers("/tarifas/**").hasRole("ADMIN")  // rutas y subrutas, solo permitidas a Perfil ADMIN
+                .requestMatchers("/tarifas/**").hasRole("ADMIN")
+                .requestMatchers("/usuarios/reporte", "/usuarios/reporte/**").hasRole("ADMIN")
+            .requestMatchers("/envios/reporte", "/envios/reporte/**").hasAnyRole("ADMIN", "MENSAJERO")  // rutas y subrutas, solo permitidas a Perfil ADMIN
                 .requestMatchers("/perfil", "/perfil/**","/seguimiento", "/seguimiento/**").authenticated()
                 .requestMatchers("/home", "/home_cliente").authenticated()   // rutas permitidas para usuarios autenticados : actualiza perfil usuario
                 .anyRequest().authenticated()

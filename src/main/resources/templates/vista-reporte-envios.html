@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Envíos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #031a03, #052f05, #004d00);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        .title-glow {
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .filter-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .filter-header {
+            background: rgba(0, 255, 136, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        .form-control, .form-select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            color: white;
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: #00ff88;
+            color: white;
+        }
+        .form-select option {
+            background: #052f05;
+            color: white;
+        }
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .table {
+            color: white;
+        }
+        .table thead {
+            background: rgba(0, 255, 136, 0.2);
+        }
+        .table thead th {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        .table tbody tr:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+    </style>
+</head>
+<body class="container">
+
+    <h2 class="title-glow">
+        <i class="bi bi-file-earmark-bar-graph"></i> Reporte de Envíos
+    </h2>
+
+    <!-- FILTROS -->
+    <form method="get" th:action="@{/envios/reporte}" class="mb-4">
+        <div class="row g-3">
+            
+            <!-- Filtro por Número de Guía -->
+            <div class="col-md-3">
+                <div class="filter-card">
+                    <div class="filter-header">Número de Guía</div>
+                    <input type="text" name="numeroGuia" class="form-control" 
+                           placeholder="ENV123456" th:value="${numeroGuia}">
+                </div>
+            </div>
+
+            <!-- Filtro por Estado -->
+            <div class="col-md-3">
+                <div class="filter-card">
+                    <div class="filter-header">Estado</div>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option th:each="e : ${estados}" 
+                                th:value="${e}" 
+                                th:text="${e.displayName}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Filtro Fecha Desde -->
+            <div class="col-md-3">
+                <div class="filter-card">
+                    <div class="filter-header">Desde</div>
+                    <input type="date" name="desde" class="form-control" th:value="${desde}">
+                </div>
+            </div>
+
+            <!-- Filtro Fecha Hasta -->
+            <div class="col-md-3">
+                <div class="filter-card">
+                    <div class="filter-header">Hasta</div>
+                    <input type="date" name="hasta" class="form-control" th:value="${hasta}">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-funnel-fill"></i> Filtrar
+            </button>
+        </div>
+    </form>
+
+    <!-- TABLA -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th>Guía</th>
+                        <th>Cliente</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Peso</th>
+                        <th>Costo</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="envio : ${envios}">
+                        <td th:text="${envio.numeroGuia}"></td>
+                        <td>
+                            <span th:if="${envio.cliente != null}" 
+                                  th:text="${envio.cliente.nombre}"></span>
+                            <span th:unless="${envio.cliente != null}">N/A</span>
+                        </td>
+                        <td>
+                            <span th:if="${envio.lugarRecogida != null}" 
+                                  th:text="${envio.lugarRecogida.ciudad}"></span>
+                            <span th:unless="${envio.lugarRecogida != null}">N/A</span>
+                        </td>
+                        <td>
+                            <span th:if="${envio.lugarEntrega != null}" 
+                                  th:text="${envio.lugarEntrega.ciudad}"></span>
+                            <span th:unless="${envio.lugarEntrega != null}">N/A</span>
+                        </td>
+                        <td th:text="${envio.peso}"></td>
+                        <td th:text="${envio.costoEnvio}"></td>
+                        <td>
+                            <span class="badge bg-primary" th:text="${envio.estado.displayName}"></span>
+                        </td>
+                        <td th:text="${#temporals.format(envio.fechaCreacion, 'dd/MM/yyyy')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-3">
+            <a th:href="@{/envios/reporte/pdf(numeroGuia=${numeroGuia}, estado=${estado}, desde=${desde}, hasta=${hasta})}"
+               class="btn btn-primary">
+                Descargar PDF
+            </a>
+            <a th:href="@{/envios}" class="btn btn-secondary">Volver</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #00ff88;
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            color: #004d00;
+            margin: 0;
+        }
+        .header h2 {
+            color: #00ff88;
+            margin: 5px 0;
+        }
+        .info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-left: 4px solid #00ff88;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #004d00;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .badge-activo {
+            background-color: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        .badge-inactivo {
+            background-color: #dc3545;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado institucional -->
+    <div class="header">
+        <h1>ENVIEXPRESS</h1>
+        <h2>Reporte de Usuarios</h2>
+    </div>
+
+    <!-- Información del reporte -->
+    <div class="info">
+        <strong>Fecha de generación:</strong> ${fecha}<br/>
+        <strong>Total de usuarios:</strong> ${total}
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Nombre Completo</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Rol</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <#list usuarios as usuario>
+            <tr>
+                <td>${usuario.idUsuario}</td>
+                <td>${usuario.userName}</td>
+                <td>${usuario.nombre} ${usuario.apellido}</td>
+                <td>${usuario.correo}</td>
+                <td><#if usuario.telefono??>${usuario.telefono}<#else>-</#if></td>
+                <td>${usuario.rol}</td>
+                <td>
+                    <#if usuario.activo>
+                        <span class="badge-activo">Activo</span>
+                    <#else>
+                        <span class="badge-inactivo">Inactivo</span>
+                    </#if>
+                </td>
+            </tr>
+            </#list>
+        </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Sistema de Gestión de Envíos - EnviExpress © 2025</p>
+    </div>
+</body>
+</html>

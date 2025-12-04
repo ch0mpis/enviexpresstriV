@@ -54,6 +54,22 @@
             color: black;
         }
 
+        .btn-outline-neon {
+            background: transparent;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 10px 20px;
+            font-weight: 700;
+            border-radius: 10px;
+            transition: .3s;
+        }
+
+        .btn-outline-neon:hover {
+            background: #00ff88;
+            color: black;
+            transform: scale(1.05);
+        }
+
         .table-container {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(0, 255, 0, 0.25);
@@ -155,9 +171,13 @@
         <i class="bi bi-people-fill"></i> Gestión de Usuarios
     </h1>
 
-    <div class="mb-4">
+    <!-- BOTONES DE ACCIÓN -->
+    <div class="mb-4 d-flex gap-3 flex-wrap">
         <a class="btn btn-green" th:href="@{/usuarios/nuevo}">
             <i class="bi bi-person-plus-fill"></i> Nuevo Usuario
+        </a>
+        <a class="btn btn-outline-neon" th:href="@{/usuarios/reporte}">
+            <i class="bi bi-file-earmark-bar-graph"></i> Generar Reporte
         </a>
     </div>
 
