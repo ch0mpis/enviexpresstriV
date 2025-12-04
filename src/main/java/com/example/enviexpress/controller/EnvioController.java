@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.time.format.DateTimeFormatter;
 
 @Controller
 @RequestMapping("/envios")
@@ -50,28 +50,55 @@ public class EnvioController {
     // ============= CRUD ENVÍOS =============
 
     // Listar todos los envíos
-    @GetMapping
-    public String listar(Model model, Authentication auth) {
-        String username = auth.getName();
-        Usuario usuario = usuarioRepo.findByUserName(username).orElse(null);
-        
-        List<Envio> envios;
-        
-        // Si es admin, muestra todos. Si es cliente, solo sus envíos. Si es mensajero, los asignados a él
-        if (usuario != null && usuario.getRol().equals("ROLE_ADMIN")) {
-            envios = envioRepo.findAll();
-        } else if (usuario != null && usuario.getRol().equals("ROLE_CLIENTE")) {
-            envios = envioRepo.findByCliente(usuario);
-        } else if (usuario != null && usuario.getRol().equals("ROLE_MENSAJERO")) {
-            envios = envioRepo.findByMensajero(usuario);
-        } else {
-            envios = List.of();
-        }
-        
-        model.addAttribute("envios", envios);
-        model.addAttribute("rol", usuario != null ? usuario.getRol() : "");
+@GetMapping
+public String listar(Model model, Authentication auth) {
+    String username = auth.getName();
+    
+    System.out.println("==========================================");
+    System.out.println("LISTAR ENVÍOS - Usuario: " + username);
+    
+    Usuario usuario = usuarioRepo.findByUserName(username).orElse(null);
+    
+    if (usuario == null) {
+        System.out.println("ERROR: Usuario no encontrado");
+        model.addAttribute("envios", List.of());
+        model.addAttribute("rol", "");
         return "envios";
     }
+    
+    System.out.println("Rol del usuario: " + usuario.getRol());
+    
+    List<Envio> envios;
+    String rol = usuario.getRol();
+    
+    // Aceptar tanto "ADMIN" como "ROLE_ADMIN"
+    if (rol.equals("ROLE_ADMIN") || rol.equals("ADMIN")) {
+        System.out.println("Es ADMIN - Cargando TODOS los envíos");
+        envios = envioRepo.findAll();
+        System.out.println("Total envíos encontrados: " + envios.size());
+        
+    } else if (rol.equals("ROLE_CLIENTE") || rol.equals("CLIENTE")) {
+        System.out.println("Es CLIENTE - Cargando solo sus envíos");
+        envios = envioRepo.findByCliente(usuario);
+        System.out.println("Total envíos del cliente: " + envios.size());
+        
+    } else if (rol.equals("ROLE_MENSAJERO") || rol.equals("MENSAJERO")) {
+        System.out.println("Es MENSAJERO - Cargando envíos asignados");
+        envios = envioRepo.findByMensajero(usuario);
+        System.out.println("Total envíos asignados: " + envios.size());
+        
+    } else {
+        System.out.println("ERROR: Rol desconocido: " + rol);
+        envios = List.of();
+    }
+    
+    System.out.println("Enviando al modelo " + envios.size() + " envíos");
+    System.out.println("==========================================");
+    
+    model.addAttribute("envios", envios);
+    model.addAttribute("rol", usuario.getRol());
+    return "envios";
+}
 
     // Formulario para nuevo envío
     @GetMapping("/nuevo")
@@ -266,9 +293,6 @@ public class EnvioController {
 
     // ============= REPORTES =============
 
-    /**
-     * Muestra la vista de reporte de envíos con filtros
-     */
     @GetMapping("/reporte")
     public String vistaReporte(
             @RequestParam(required = false) String numeroGuia,
@@ -289,55 +313,48 @@ public class EnvioController {
         return "vista-reporte-envios";
     }
 
-/**
- * Genera el PDF de envíos
- */
-@GetMapping("/reporte/pdf")
-public void generarReportePdf(
-        @RequestParam(required = false) String numeroGuia,
-        @RequestParam(required = false) EstadoEnvio estado,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
-        HttpServletResponse response) throws Exception {
-    
-    List<Envio> envios = filtrarEnvios(numeroGuia, estado, desde, hasta);
-    
-    // Convertir envíos a un formato amigable para FreeMarker
-    List<Map<String, Object>> enviosFormateados = envios.stream()
-        .map(e -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("numeroGuia", e.getNumeroGuia());
-            map.put("clienteNombre", e.getCliente() != null ? e.getCliente().getNombre() + " " + e.getCliente().getApellido() : "N/A");
-            map.put("origenCiudad", e.getLugarRecogida() != null ? e.getLugarRecogida().getCiudad() : "N/A");
-            map.put("destinoCiudad", e.getLugarEntrega() != null ? e.getLugarEntrega().getCiudad() : "N/A");
-            map.put("peso", e.getPeso());
-            map.put("costoEnvio", e.getCostoEnvio());
-            map.put("estadoNombre", e.getEstado().name());
-            map.put("estadoDisplay", e.getEstado().getDisplayName());
-            map.put("fechaCreacion", e.getFechaCreacion().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            return map;
-        })
-        .collect(Collectors.toList());
-    
-    Map<String, Object> model = new HashMap<>();
-    model.put("envios", enviosFormateados);
-    model.put("fecha", LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-    model.put("desde", desde != null ? desde.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null);
-    model.put("hasta", hasta != null ? hasta.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null);
-    model.put("total", envios.size());
-    
-    // Calcular estadísticas
-    BigDecimal totalCostos = envios.stream()
-        .map(Envio::getCostoEnvio)
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
-    model.put("totalCostos", totalCostos);
-    
-    pdfGenerator.generarPdf("reporte-envios", model, "reporte-envios", response);
-}
+    @GetMapping("/reporte/pdf")
+    public void generarReportePdf(
+            @RequestParam(required = false) String numeroGuia,
+            @RequestParam(required = false) EstadoEnvio estado,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            HttpServletResponse response) throws Exception {
+        
+        List<Envio> envios = filtrarEnvios(numeroGuia, estado, desde, hasta);
+        
+        // Convertir envíos a formato amigable para FreeMarker
+        List<Map<String, Object>> enviosFormateados = envios.stream()
+            .map(e -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("numeroGuia", e.getNumeroGuia());
+                map.put("clienteNombre", e.getCliente() != null ? e.getCliente().getNombre() + " " + e.getCliente().getApellido() : "N/A");
+                map.put("origenCiudad", e.getLugarRecogida() != null ? e.getLugarRecogida().getCiudad() : "N/A");
+                map.put("destinoCiudad", e.getLugarEntrega() != null ? e.getLugarEntrega().getCiudad() : "N/A");
+                map.put("peso", e.getPeso());
+                map.put("costoEnvio", e.getCostoEnvio());
+                map.put("estadoNombre", e.getEstado().name());
+                map.put("estadoDisplay", e.getEstado().getDisplayName());
+                map.put("fechaCreacion", e.getFechaCreacion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                return map;
+            })
+            .collect(Collectors.toList());
+        
+        Map<String, Object> model = new HashMap<>();
+        model.put("envios", enviosFormateados);
+        model.put("fecha", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        model.put("desde", desde != null ? desde.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null);
+        model.put("hasta", hasta != null ? hasta.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null);
+        model.put("total", envios.size());
+        
+        BigDecimal totalCostos = envios.stream()
+            .map(Envio::getCostoEnvio)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        model.put("totalCostos", totalCostos);
+        
+        pdfGenerator.generarPdf("reporte-envios", model, "reporte-envios", response);
+    }
 
-    /**
-     * Método auxiliar para filtrar envíos
-     */
     private List<Envio> filtrarEnvios(String numeroGuia, EstadoEnvio estado, LocalDate desde, LocalDate hasta) {
         List<Envio> todos = envioRepo.findAll();
         
